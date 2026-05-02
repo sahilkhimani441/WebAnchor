@@ -11,6 +11,60 @@ export default function Home() {
   const { hash } = useLocation();
   const [openFaq, setOpenFaq] = useState<number | null>(null);
 
+  const [formData, setFormData] = useState({ name: '', businessName: '', trade: '', phone: '' });
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const validateField = (name: string, value: string) => {
+    if (!value.trim()) return `${name === 'businessName' ? 'Business name' : name.charAt(0).toUpperCase() + name.slice(1)} is required.`;
+    if (name === 'phone' && !/^[\d\s\+\-()]{8,}$/.test(value)) return 'Please enter a valid phone number.';
+    return '';
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Real-time validation if field was previously erroring or just typing
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: validateField(name, value) }));
+    }
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    const error = validateField(name, value);
+    if (error) setFormErrors(prev => ({ ...prev, [name]: error }));
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const errors = {
+      name: validateField('name', formData.name),
+      businessName: validateField('businessName', formData.businessName),
+      trade: validateField('trade', formData.trade),
+      phone: validateField('phone', formData.phone)
+    };
+    
+    // Keep only strings that aren't empty
+    const activeErrors = Object.fromEntries(Object.entries(errors).filter(([_, v]) => v !== ''));
+    
+    if (Object.keys(activeErrors).length > 0) {
+       setFormErrors(activeErrors);
+       return;
+    }
+    
+    setIsSubmitting(true);
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubmitting(false);
+      setIsSubmitted(true);
+      setFormData({ name: '', businessName: '', trade: '', phone: '' });
+      setTimeout(() => setIsSubmitted(false), 5000); // Reset success after 5s
+    }, 1500);
+  };
+
   useEffect(() => {
     if (hash) {
       const element = document.querySelector(hash);
@@ -314,25 +368,35 @@ export default function Home() {
                      <h3 className="text-2xl font-medium text-slate-900 mb-2 relative z-10" style={{ fontFamily: "serif" }}>Start Step 01</h3>
                      <p className="text-sm text-slate-600 mb-8 relative z-10">Get your free, no-obligation mockup in 24 hours.</p>
                      
-                     <form className="space-y-4 relative z-10" onSubmit={(e) => { e.preventDefault(); alert("Form submitted demo"); }}>
+                     <form className="space-y-4 relative z-10" onSubmit={handleFormSubmit}>
                         <div>
                            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2 text-left ml-1">Name</label>
-                           <input type="text" className="w-full bg-gradient-to-br from-white to-slate-50/80 border border-[#EAE8E1] px-5 py-3.5 rounded-2xl outline-none focus:border-[#8B4A46]/60 focus:bg-white focus:ring-4 focus:ring-[#8B4A46]/10 transition-all text-slate-800 placeholder-slate-400 font-medium" placeholder="John Smith" required />
+                           <input type="text" name="name" value={formData.name} onChange={handleInputChange} onBlur={handleBlur} className={`w-full bg-gradient-to-br from-white to-slate-50/80 border ${formErrors.name ? 'border-red-400 focus:border-red-500 focus:ring-red-400/20' : 'border-[#EAE8E1] focus:border-[#8B4A46]/60 focus:ring-[#8B4A46]/10'} px-5 py-3.5 rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all text-slate-800 placeholder-slate-400 font-medium`} placeholder="John Smith" />
+                           {formErrors.name && <p className="text-red-500 text-xs mt-1.5 ml-2 text-left">{formErrors.name}</p>}
                         </div>
                         <div>
                            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2 text-left ml-1">Business Name</label>
-                           <input type="text" className="w-full bg-gradient-to-br from-white to-slate-50/80 border border-[#EAE8E1] px-5 py-3.5 rounded-2xl outline-none focus:border-[#8B4A46]/60 focus:bg-white focus:ring-4 focus:ring-[#8B4A46]/10 transition-all text-slate-800 placeholder-slate-400 font-medium" placeholder="E.g. Wright Plumbing Ltd" required />
+                           <input type="text" name="businessName" value={formData.businessName} onChange={handleInputChange} onBlur={handleBlur} className={`w-full bg-gradient-to-br from-white to-slate-50/80 border ${formErrors.businessName ? 'border-red-400 focus:border-red-500 focus:ring-red-400/20' : 'border-[#EAE8E1] focus:border-[#8B4A46]/60 focus:ring-[#8B4A46]/10'} px-5 py-3.5 rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all text-slate-800 placeholder-slate-400 font-medium`} placeholder="E.g. Wright Plumbing Ltd" />
+                           {formErrors.businessName && <p className="text-red-500 text-xs mt-1.5 ml-2 text-left">{formErrors.businessName}</p>}
                         </div>
                         <div>
                            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2 text-left ml-1">Trade / Service</label>
-                           <input type="text" className="w-full bg-gradient-to-br from-white to-slate-50/80 border border-[#EAE8E1] px-5 py-3.5 rounded-2xl outline-none focus:border-[#8B4A46]/60 focus:bg-white focus:ring-4 focus:ring-[#8B4A46]/10 transition-all text-slate-800 placeholder-slate-400 font-medium" placeholder="E.g. Plumber, Electrician" required />
+                           <input type="text" name="trade" value={formData.trade} onChange={handleInputChange} onBlur={handleBlur} className={`w-full bg-gradient-to-br from-white to-slate-50/80 border ${formErrors.trade ? 'border-red-400 focus:border-red-500 focus:ring-red-400/20' : 'border-[#EAE8E1] focus:border-[#8B4A46]/60 focus:ring-[#8B4A46]/10'} px-5 py-3.5 rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all text-slate-800 placeholder-slate-400 font-medium`} placeholder="E.g. Plumber, Electrician" />
+                           {formErrors.trade && <p className="text-red-500 text-xs mt-1.5 ml-2 text-left">{formErrors.trade}</p>}
                         </div>
                         <div>
                            <label className="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2 text-left ml-1">Phone Number</label>
-                           <input type="tel" className="w-full bg-gradient-to-br from-white to-slate-50/80 border border-[#EAE8E1] px-5 py-3.5 rounded-2xl outline-none focus:border-[#8B4A46]/60 focus:bg-white focus:ring-4 focus:ring-[#8B4A46]/10 transition-all text-slate-800 placeholder-slate-400 font-medium" placeholder="07123 456789" required />
+                           <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} onBlur={handleBlur} className={`w-full bg-gradient-to-br from-white to-slate-50/80 border ${formErrors.phone ? 'border-red-400 focus:border-red-500 focus:ring-red-400/20' : 'border-[#EAE8E1] focus:border-[#8B4A46]/60 focus:ring-[#8B4A46]/10'} px-5 py-3.5 rounded-2xl outline-none focus:bg-white focus:ring-4 transition-all text-slate-800 placeholder-slate-400 font-medium`} placeholder="07123 456789" />
+                           {formErrors.phone && <p className="text-red-500 text-xs mt-1.5 ml-2 text-left">{formErrors.phone}</p>}
                         </div>
-                        <button type="submit" className="w-full bg-[#8B4A46] text-white px-6 py-4 rounded-2xl font-medium hover:bg-[#703B38] hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#8B4A46]/30 active:translate-y-0 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 group mt-6 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8B4A46] border border-transparent">
-                           Get My Free Website Mockup <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-300" />
+                        <button type="submit" disabled={isSubmitting || isSubmitted} className={`w-full ${isSubmitted ? 'bg-green-600 hover:bg-green-600' : 'bg-[#8B4A46] hover:bg-[#703B38]'} text-white px-6 py-4 rounded-2xl font-medium hover:-translate-y-0.5 hover:shadow-xl hover:shadow-[#8B4A46]/30 active:translate-y-0 active:scale-[0.98] transition-all duration-300 flex items-center justify-center gap-2 group mt-6 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#8B4A46] border border-transparent disabled:opacity-80 disabled:cursor-not-allowed disabled:transform-none`}>
+                           {isSubmitting ? (
+                              <span className="flex items-center gap-2">Processing... <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span></span>
+                           ) : isSubmitted ? (
+                              <span className="flex items-center gap-2">Mockup Requested! <CheckCircle2 className="w-5 h-5" /></span>
+                           ) : (
+                              <>Get My Free Website Mockup <ArrowRight className="w-5 h-5 group-hover:translate-x-1.5 transition-transform duration-300" /></>
+                           )}
                         </button>
                         <p className="text-[10px] text-center text-slate-400 mt-4">We respect your privacy. No spam, no hard sell.</p>
                      </form>
