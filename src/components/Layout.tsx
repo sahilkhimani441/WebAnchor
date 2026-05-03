@@ -4,6 +4,7 @@ import {
   Phone, MessageCircle, Mail, MapPin, Anchor, ChevronUp
 } from 'lucide-react';
 import { Outlet, Link } from 'react-router-dom';
+import Chatbot from './Chatbot';
 
 export default function Layout() {
   const phoneNumber = "+447825182199";
@@ -96,7 +97,7 @@ export default function Layout() {
                      <span>North End, Portsmouth, PO2 0PT</span>
                   </div>
                   <div className="mt-2 text-xs text-slate-400 leading-relaxed max-w-xs">
-                     <span className="font-semibold text-slate-500">Serving </span>
+                     <span className="text-slate-500">Serving: </span>
                      Portsmouth · Southampton · Fareham · Gosport · Havant · Waterlooville · Hampshire & UK wide
                   </div>
                </div>
@@ -128,6 +129,18 @@ export default function Layout() {
          </span>
       </motion.a>
 
+      {/* FLOATING MOBILE CALL BUTTON */}
+      <motion.a 
+         initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 1.2, type: "spring" }}
+         href={`tel:${phoneNumber}`} 
+         className="md:hidden fixed bottom-6 left-6 z-50 bg-[#8B4A46] text-white p-4 rounded-full shadow-xl shadow-[#8B4A46]/30 hover:scale-110 hover:shadow-[#8B4A46]/50 transition-all flex items-center justify-center group"
+      >
+         <Phone className="w-7 h-7" />
+         <span className="absolute left-full ml-4 bg-slate-900 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            Call us directly
+         </span>
+      </motion.a>
+
       {/* SCROLL TO TOP BUTTON */}
       <AnimatePresence>
          {showScrollTop && (
@@ -143,6 +156,8 @@ export default function Layout() {
             </motion.button>
          )}
       </AnimatePresence>
+
+      <Chatbot />
     </div>
   );
 }
